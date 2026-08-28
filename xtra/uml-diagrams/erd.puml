@@ -1,0 +1,51 @@
+@startuml
+!theme mono
+
+hide circle
+hide methods
+
+' ============================================================
+' ENTITIES
+' ============================================================
+entity "User" as User {
+  * id : INT <<PK>>
+  --
+  * name : VARCHAR
+  * email : VARCHAR <<unique>>
+  * password_hash : VARCHAR
+  * role : ENUM('customer','agent','admin')
+  * created_at : DATETIME
+}
+
+entity "Ticket" as Ticket {
+  * id : INT <<PK>>
+  --
+  * subject : VARCHAR
+  * description : TEXT
+  * status : ENUM('open','in-progress','closed')
+  * priority : ENUM('low','medium','high')
+  * customer_id : INT <<FK>>
+  o agent_id : INT <<FK, nullable>>
+  * created_at : DATETIME
+}
+
+entity "Comment" as Comment {
+  * id : INT <<PK>>
+  --
+  * ticket_id : INT <<FK>>
+  * user_id : INT <<FK>>
+  * message : TEXT
+  * created_at : DATETIME
+}
+
+' ============================================================
+' RELATIONSHIPS (crow's foot notation)
+' User plays TWO different roles against Ticket — drawn as
+' two separate labeled lines, not one shared line.
+' ============================================================
+User ||--o{ Ticket : "files (customer)"
+User |o--o{ Ticket : "is assigned (agent, optional)"
+Ticket ||--o{ Comment : "has"
+User ||--o{ Comment : "writes"
+
+@enduml

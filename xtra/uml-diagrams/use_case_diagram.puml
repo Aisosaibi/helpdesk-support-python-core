@@ -1,0 +1,72 @@
+@startuml
+!theme mono
+left to right direction
+skinparam packageStyle rectangle
+
+' ============================================================
+' ACTORS
+' ============================================================
+actor User
+actor Customer
+actor Agent
+actor Admin
+
+' Generalization: Customer, Agent, Admin all ARE a User
+Customer --|> User
+Agent --|> User
+
+' Generalization: Admin inherits everything an Agent can do
+Admin --|> Agent
+
+rectangle "Helpdesk System" {
+
+  ' --- Shared by every logged-in user ---
+  usecase "Login" as UC0
+  usecase "Logout" as UC0a
+  usecase "Update My Profile" as UC0b
+
+  ' --- Customer-specific ---
+  usecase "Submit Ticket" as UC1
+  usecase "View My Tickets" as UC2
+
+  ' --- Shared between Customer and Agent ---
+  usecase "Add Comment" as UC3
+
+  ' --- Agent-specific ---
+  ' Note: "Close" is not its own use case — it's one possible
+  ' value an Agent sets via "Update Ticket Status" (alongside
+  ' In Progress, Resolved, etc). State only ever changes through
+  ' this one deliberate action, never as a side effect of viewing.
+  usecase "View Assigned Tickets" as UC4
+  usecase "Update Ticket Status" as UC5
+
+  ' --- Admin-specific ---
+  usecase "View All Tickets" as UC7
+  usecase "Assign Ticket to Agent" as UC8
+  usecase "Manage Users" as UC9
+  usecase "Set Ticket Priority" as UC10
+}
+
+' User-level (inherited by all three actors below)
+User --> UC0
+User --> UC0a
+User --> UC0b
+
+' Customer
+Customer --> UC1
+Customer --> UC2
+Customer --> UC3
+
+' Agent
+Agent --> UC4
+Agent --> UC5
+Agent --> UC3
+
+' Admin (only admin-only use cases need direct lines —
+' Agent's use cases are already inherited via generalization)
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+
+@enduml

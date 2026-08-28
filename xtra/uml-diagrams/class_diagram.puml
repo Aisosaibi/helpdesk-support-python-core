@@ -1,0 +1,152 @@
+@startuml
+!theme mono
+
+skinparam backgroundColor #FFFFFF
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam classFontColor #000000
+skinparam classAttributeFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontColor #000000
+skinparam packageBorderColor #000000
+skinparam packageFontColor #000000
+
+' ============================================================
+' MODELS — plain data holders, no logic
+' ============================================================
+package "Models" {
+  class UserModel {
+    - id : int
+    - name : string
+    - email : string
+    - passwordHash : string
+    - role : string
+    - createdAt : datetime
+  }
+
+  class TicketModel {
+    - id : int
+    - subject : string
+    - description : string
+    - status : string
+    - priority : string
+    - customerId : int
+    - agentId : int
+    - createdAt : datetime
+  }
+
+  class CommentModel {
+    - id : int
+    - ticketId : int
+    - userId : int
+    - message : string
+    - createdAt : datetime
+  }
+}
+
+' ============================================================
+' REPOSITORIES — interface + concrete implementation each,
+' for Dependency Inversion (Service depends on the interface)
+' ============================================================
+package "Repositories" {
+  interface IUserRepository {
+    + getUserById(id) : UserModel
+    + getUserByEmail(email) : UserModel
+    + saveUser(user) : UserModel
+    + updateUser(user) : UserModel
+    + deleteUser(id) : void
+  }
+  class UserRepository implements IUserRepository
+
+  interface ITicketRepository {
+    + getTicketById(id) : TicketModel
+    + getAllTickets() : List<TicketModel>
+    + saveTicket(ticket) : TicketModel
+    + updateTicket(ticket) : TicketModel
+    + deleteTicket(id) : void
+  }
+  class TicketRepository implements ITicketRepository
+
+  interface ICommentRepository {
+    + getCommentsByTicketId(ticketId) : List<CommentModel>
+    + saveComment(comment) : CommentModel
+  }
+  class CommentRepository implements ICommentRepository
+}
+
+' ============================================================
+' SERVICES — business logic, one per entity
+' ============================================================
+package "Services" {
+  class UserService {
+    - userRepository : IUserRepository
+    + registerUser(name, email, password) : UserModel
+    + login(email, password) : UserModel
+    + logout(userId) : void
+    + updateProfile(userId, changes) : UserModel
+    + listUsers() : List<UserModel>
+  }
+
+  class TicketService {
+    - ticketRepository : ITicketRepository
+    + submitTicket(customerId, subject, description) : TicketModel
+    + viewTicket(id) : TicketModel
+    + viewTickets() : List<TicketModel>
+    + updateStatus(id, newStatus, callerRole) : TicketModel
+    + setPriority(id, newPriority, callerRole) : TicketModel
+  }
+
+  class CommentService {
+    - commentRepository : ICommentRepository
+    - ticketRepository : ITicketRepository
+    + addComment(ticketId, userId, message) : CommentModel
+    + getCommentsForTicket(ticketId) : List<CommentModel>
+  }
+}
+
+' ============================================================
+' CONTROLLERS — HTTP-facing, thin, call into Services only
+' ============================================================
+package "Controllers" {
+  class UserController {
+    - userService : UserService
+    + register(request) : Response
+    + login(request) : Response
+    + logout(request) : Response
+    + updateProfile(id, request) : Response
+    + listUsers() : Response
+  }
+
+  class TicketController {
+    - ticketService : TicketService
+    + createTicket(request) : Response
+    + getAllTickets() : Response
+    + getTicketById(id) : Response
+    + updateTicketStatus(id, request) : Response
+    + updateTicketPriority(id, request) : Response
+  }
+
+  class CommentController {
+    - commentService : CommentService
+    + addComment(ticketId, request) : Response
+    + getComments(ticketId) : Response
+  }
+}
+
+' ============================================================
+' CROSS-LAYER RELATIONSHIPS (association: "depends on / holds")
+' ============================================================
+UserController --> UserService
+TicketController --> TicketService
+CommentController --> CommentService
+
+UserService --> IUserRepository
+TicketService --> ITicketRepository
+CommentService --> ICommentRepository
+CommentService --> ITicketRepository : "checks ticket status"
+
+UserRepository --> UserModel
+TicketRepository --> TicketModel
+CommentRepository --> CommentModel
+
+@enduml
