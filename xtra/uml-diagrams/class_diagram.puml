@@ -10,6 +10,7 @@ skinparam ArrowColor #000000
 skinparam ArrowFontColor #000000
 skinparam packageBorderColor #000000
 skinparam packageFontColor #000000
+hide circle
 
 ' ============================================================
 ' MODELS — plain data holders, no logic
@@ -41,6 +42,12 @@ package "Models" {
     - userId : int
     - message : string
     - createdAt : datetime
+  }
+
+  enum Role {
+    Admin
+    Agent
+    Customer
   }
 }
 
