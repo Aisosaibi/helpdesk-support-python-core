@@ -1,9 +1,7 @@
-# app/database.py
-
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from typing import Generator
+from sqlmodel import SQLModel, create_engine, Session
 
 load_dotenv()
 
@@ -19,13 +17,14 @@ DATABASE_URL = (
     f"@{DB_CONFIG['host']}/{DB_CONFIG['database']}"
 )
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+engine = create_engine(DATABASE_URL, echo=True)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
+def create_db_and_tables() -> None:
+    """Create all tables defined via SQLModel metadata."""
+    SQLModel.metadata.create_all(engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session
