@@ -1,6 +1,6 @@
-# app/services/user_service.py
-
 from fastapi import HTTPException, status
+
+from app.core.security import hash_password
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user_schemas import UserCreate, UserUpdate
@@ -23,7 +23,7 @@ class UserService:
     def create_user(self, data: UserCreate) -> User:
         if self.repo.get_by_email(data.email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
-        user = User(name=data.name, email=data.email, password=data.password, role=data.role)
+        user = User(name=data.name, email=data.email, password=hash_password(data.password), role=data.role)
         return self.repo.create(user)
 
     def update_user(self, user_id: int, data: UserUpdate) -> User:
@@ -33,7 +33,7 @@ class UserService:
         if data.email is not None:
             user.email = data.email
         if data.password is not None:
-            user.password = data.password
+            user.password = hash_password(data.password)
         if data.role is not None:
             user.role = data.role
         return self.repo.update(user)
