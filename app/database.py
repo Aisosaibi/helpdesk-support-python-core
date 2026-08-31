@@ -1,31 +1,21 @@
-# app/database.py
+from sqlmodel import SQLModel, create_engine, Session
+from typing import Generator
 
-import os
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+DATABASE_URL = "sqlite:///./helpdesk.db"
 
-load_dotenv()
-
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "database": os.getenv("DB_NAME", "helpdesk"),
-}
-
-DATABASE_URL = (
-    f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}"
-    f"@{DB_CONFIG['host']}/{DB_CONFIG['database']}"
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,
+    connect_args={"check_same_thread": False},  # required for SQLite + FastAPI
 )
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def create_db_and_tables() -> None:
+    """Create all tables defined via SQLModel metadata."""
+    SQLModel.metadata.create_all(engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """FastAPI dependency — yields a DB session and ensures it's closed."""
+    with Session(engine) as session:
+        yield session
