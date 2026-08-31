@@ -1,13 +1,23 @@
-from sqlmodel import SQLModel, create_engine, Session
+import os
+from dotenv import load_dotenv
 from typing import Generator
+from sqlmodel import SQLModel, create_engine, Session
 
-DATABASE_URL = "sqlite:///./helpdesk.db"
+load_dotenv()
 
-engine = create_engine(
-    DATABASE_URL,
-    echo=True,
-    connect_args={"check_same_thread": False},  # required for SQLite + FastAPI
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "database": os.getenv("DB_NAME", "helpdesk"),
+}
+
+DATABASE_URL = (
+    f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}"
+    f"@{DB_CONFIG['host']}/{DB_CONFIG['database']}"
 )
+
+engine = create_engine(DATABASE_URL, echo=True)
 
 
 def create_db_and_tables() -> None:
@@ -16,6 +26,5 @@ def create_db_and_tables() -> None:
 
 
 def get_db() -> Generator[Session, None, None]:
-    """FastAPI dependency — yields a DB session and ensures it's closed."""
     with Session(engine) as session:
         yield session
