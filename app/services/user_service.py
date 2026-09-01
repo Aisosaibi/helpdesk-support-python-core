@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user_schemas import UserCreate, UserUpdate
@@ -41,3 +41,12 @@ class UserService:
     def delete_user(self, user_id: int) -> None:
         user = self.get_user(user_id)
         self.repo.delete(user)
+
+    def login_user(self, email: str, password: str) -> User:
+        user = self.repo.get_by_email(email)
+        if not user or not verify_password(password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+        return user
