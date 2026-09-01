@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
-from starlette import status
+from fastapi import APIRouter, HTTPException, Depends, status
 from app.dependencies import get_comment_service
 
 
