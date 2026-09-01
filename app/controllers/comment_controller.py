@@ -29,6 +29,6 @@ def get_comments(
         service: CommentService = Depends(get_comment_service)
 ):
     try:
-        return service.get_comment_for_ticket(ticket_id)
+        return service.get_comments_for_ticket(ticket_id)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
