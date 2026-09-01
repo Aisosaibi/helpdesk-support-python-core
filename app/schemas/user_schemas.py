@@ -24,3 +24,13 @@ class UserResponse(BaseModel):
     role: Role
 
     model_config = {"from_attributes": True}
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    message: str
+    user: UserResponse
