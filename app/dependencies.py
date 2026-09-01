@@ -1,10 +1,14 @@
+from fastapi import Depends
+from sqlmodel import Session
 
-from app.repositories.in_memory_comment_repository import InMemoryCommentRepository
-
+from app.database import get_db
+from app.repositories.ticket_repository import TicketRepository
+from app.repositories.sqlmodel_comment_repository import SqlModelCommentRepository
 from app.services.comment_service import CommentService
 
 
-comment_repository = InMemoryCommentRepository()
-
-def get_comment_service()->CommentService:
-    return CommentService(comment_repository, ticket_repository)
+def get_comment_service(session: Session = Depends(get_db)) -> CommentService:
+    return CommentService(
+        SqlModelCommentRepository(session),
+        TicketRepository(session),
+    )

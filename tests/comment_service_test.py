@@ -45,21 +45,21 @@ def service():
 
 
 def test_add_comment_returns_comment_with_correct_body(service):
-    comment = service.add_comment(ticket_id=1, user_id=42, data=CommentCreate(body="Hello there"))
+    comment = service.add_comment(ticket_id=1, user_id=42, data=CommentCreate(body="Greetings from the great guy"))
 
-    assert comment.body == "Hello there"
+    assert comment.body == "Greetings from the great guy"
     assert comment.ticket_id == 1
     assert comment.user_id == 42
 
 
 def test_add_comment_raises_when_ticket_does_not_exist(service):
     with pytest.raises(ValueError, match="Ticket not found"):
-        service.add_comment(ticket_id=999, user_id=42, data=CommentCreate(body="Hello"))
+        service.add_comment(ticket_id=999, user_id=42, data=CommentCreate(body="Wagwan"))
 
 
 def test_add_comment_raises_when_ticket_is_closed(service):
     with pytest.raises(ValueError, match="Ticket already closed"):
-        service.add_comment(ticket_id=2, user_id=42, data=CommentCreate(body="Hello"))
+        service.add_comment(ticket_id=2, user_id=42, data=CommentCreate(body="What's Good nigga"))
 
 
 def test_get_comments_for_ticket_returns_only_that_tickets_comments(service):
