@@ -6,6 +6,7 @@ from app.models.ticket_model import Status
 class TicketCreate(BaseModel):
     subject: str
     description: str
+    customer_id: int
 
 class TicketStatusUpdate(BaseModel):
     status: Status

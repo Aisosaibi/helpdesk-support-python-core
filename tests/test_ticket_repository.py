@@ -3,7 +3,7 @@ import pytest
 from dotenv import load_dotenv
 from sqlmodel import SQLModel, Session, create_engine
 
-from app.models import Ticket, Status
+from app.models import Ticket, Status, User, Role
 from app.repositories.ticket_repository import TicketRepository
 
 load_dotenv()
@@ -29,8 +29,19 @@ def repo(db_session):
     return TicketRepository(db_session)
 
 
-def test_create_ticket_saves_and_defaults_to_open(repo):
-    ticket = Ticket(subject="Printer broken", description="Won't turn on")
+@pytest.fixture
+def customer_id(db_session):
+    # A ticket's customer_id is a real foreign key -- it has to point at
+    # an actual row in `users`, not just any integer.
+    user = User(name="Test Customer", email="customer@test.com", password="hashed", role=Role.customer)
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user.id
+
+
+def test_create_ticket_saves_and_defaults_to_open(repo, customer_id):
+    ticket = Ticket(subject="Printer broken", description="Won't turn on", customer_id=customer_id)
 
     result = repo.create(ticket)
 
@@ -39,8 +50,8 @@ def test_create_ticket_saves_and_defaults_to_open(repo):
     assert result.status == Status.OPEN
 
 
-def test_get_all_tickets_returns_created_ticket(repo):
-    repo.create(Ticket(subject="Wifi down", description="No connection"))
+def test_get_all_tickets_returns_created_ticket(repo, customer_id):
+    repo.create(Ticket(subject="Wifi down", description="No connection", customer_id=customer_id))
 
     tickets = repo.get_all()
 
@@ -54,8 +65,8 @@ def test_get_by_id_returns_none_when_missing(repo):
     assert result is None
 
 
-def test_delete_removes_ticket(repo):
-    ticket = repo.create(Ticket(subject="Old ticket", description="To be removed"))
+def test_delete_removes_ticket(repo, customer_id):
+    ticket = repo.create(Ticket(subject="Old ticket", description="To be removed", customer_id=customer_id))
 
     repo.delete(ticket)
 

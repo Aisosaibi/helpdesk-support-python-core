@@ -17,7 +17,7 @@ class TicketService:
         self.repo = repo
 
     def open_new_ticket(self, data: TicketCreate) -> Ticket:
-        ticket = Ticket(subject=data.subject, description=data.description)
+        ticket = Ticket(subject=data.subject, description=data.description, customer_id=data.customer_id)
         return self.repo.create(ticket)
 
     def list_tickets(self) -> Sequence[Ticket]:
@@ -42,3 +42,11 @@ class TicketService:
     def delete_ticket(self, ticket_id: int) -> None:
         ticket = self.get_ticket(ticket_id)
         self.repo.delete(ticket)
+
+    def close_all_tickets(self) -> list[Ticket]:
+        closed = []
+        for ticket in self.repo.get_all():
+            if ticket.status == TicketStatus.IN_PROGRESS:
+                ticket.status = TicketStatus.CLOSED
+                closed.append(self.repo.update(ticket))
+        return closed

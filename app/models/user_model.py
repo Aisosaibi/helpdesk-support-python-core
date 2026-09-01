@@ -1,5 +1,3 @@
-# app/models/user_model.py
-
 from enum import Enum
 from typing import Optional
 from sqlmodel import SQLModel, Field
