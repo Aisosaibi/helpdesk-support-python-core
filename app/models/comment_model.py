@@ -16,5 +16,6 @@ class Comment(SQLModel, table=True):
     ticket_id: int = Field(foreign_key="tickets.id", nullable=False)
     user_id: int = Field(foreign_key="users.id", nullable=False)
     created_at: datetime = Field(default_factory= lambda : datetime.now(timezone.utc), nullable=False)
+    is_deleted: bool = Field(default=False)
 
     ticket: Optional["Ticket"] = Relationship(back_populates="comments")
