@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
+
+from app.models.comment_model import Comment
 
 
 class Status(str, Enum):
@@ -26,7 +28,7 @@ class Ticket(SQLModel, table=True):
     priority: Priority = Priority.LOW
     customer_id: int = Field(foreign_key="users.id")
     agent_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     comments: list["Comment"] = Relationship(
         back_populates="ticket",

@@ -6,6 +6,7 @@ from sqlmodel import SQLModel, Session, create_engine
 
 from app.main import app
 from app.database import get_db
+from app.models import User, Role
 
 load_dotenv()
 
@@ -33,8 +34,24 @@ def setup_and_teardown():
     SQLModel.metadata.drop_all(test_engine)
 
 
-def test_create_and_list_tickets():
-    response = client.post("/tickets/", json={"subject": "Broken chair", "description": "Leg is loose"})
+@pytest.fixture
+def customer_id():
+    # The controller tests go through the real HTTP layer, so we seed the
+    # user directly in the test DB first -- same reasoning as the repository
+    # tests: customer_id is a real foreign key, not an arbitrary integer.
+    with Session(test_engine) as session:
+        user = User(name="Test Customer", email="customer@test.com", password="hashed", role=Role.customer)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user.id
+
+
+def test_create_and_list_tickets(customer_id):
+    response = client.post(
+        "/tickets/",
+        json={"subject": "Broken chair", "description": "Leg is loose", "customer_id": customer_id},
+    )
     assert response.status_code == 201
     data = response.json()
     assert data["subject"] == "Broken chair"
@@ -45,8 +62,11 @@ def test_create_and_list_tickets():
     assert len(response.json()) == 1
 
 
-def test_update_ticket_status_for_valid_transition():
-    create_response = client.post("/tickets/", json={"subject": "Slow laptop", "description": "Takes forever"})
+def test_update_ticket_status_for_valid_transition(customer_id):
+    create_response = client.post(
+        "/tickets/",
+        json={"subject": "Slow laptop", "description": "Takes forever", "customer_id": customer_id},
+    )
     ticket_id = create_response.json()["id"]
 
     response = client.patch(f"/tickets/{ticket_id}/status", json={"status": "in-progress"})
@@ -58,8 +78,11 @@ def test_update_ticket_status_for_valid_transition():
     assert response.status_code == 400
 
 
-def test_update_ticket_status_rejects_invalid_jump():
-    create_response = client.post("/tickets/", json={"subject": "New printer", "description": "Needs setup"})
+def test_update_ticket_status_rejects_invalid_jump(customer_id):
+    create_response = client.post(
+        "/tickets/",
+        json={"subject": "New printer", "description": "Needs setup", "customer_id": customer_id},
+    )
     ticket_id = create_response.json()["id"]
 
     # open -> closed is not a legal transition
@@ -67,8 +90,11 @@ def test_update_ticket_status_rejects_invalid_jump():
     assert response.status_code == 400
 
 
-def test_delete_ticket_returns_204():
-    create_response = client.post("/tickets/", json={"subject": "Temp", "description": "..."})
+def test_delete_ticket_returns_204(customer_id):
+    create_response = client.post(
+        "/tickets/",
+        json={"subject": "Temp", "description": "...", "customer_id": customer_id},
+    )
     ticket_id = create_response.json()["id"]
 
     response = client.delete(f"/tickets/{ticket_id}")

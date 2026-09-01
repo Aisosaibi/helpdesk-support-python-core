@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from fastapi import HTTPException
 
-from app.models.ticket_model import Ticket, Status
+from app.models.ticket_model import Ticket, Status as TicketStatus
 from app.services.ticket_service import TicketService
 from app.schemas.ticket_schema import TicketCreate
 
@@ -23,7 +23,7 @@ def test_open_new_ticket_defaults_to_open_status(service, fake_repo):
     fake_repo.create.return_value = Ticket(
         id=1, subject="Wifi down", description="Cannot connect", status=TicketStatus.OPEN
     )
-    ticket_data = TicketCreate(subject="Wifi down", description="Cannot connect")
+    ticket_data = TicketCreate(subject="Wifi down", description="Cannot connect", customer_id=1)
 
     result = service.open_new_ticket(ticket_data)
 
