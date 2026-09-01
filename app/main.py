@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.database import create_db_and_tables
+
 from app.controllers import ticket_controller
 
 create_db_and_tables()
@@ -11,5 +12,5 @@ app = FastAPI(title="Helpdesk Ticket System")
 def health_check():
     return {"status": "ok"}
 
-
 app.include_router(ticket_controller.router)
+
