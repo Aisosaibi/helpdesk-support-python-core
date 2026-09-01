@@ -43,7 +43,6 @@ class UserService:
         self.repo.delete(user)
 
     def login_user(self, email: str, password: str) -> User:
-        """Check email and password. Returns the user if correct, 401 if not."""
         user = self.repo.get_by_email(email)
         if not user or not verify_password(password, user.password):
             raise HTTPException(
