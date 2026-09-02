@@ -3,6 +3,7 @@ from sqlmodel import Session
 
 from app.database import get_db
 from app.repositories.ticket_repository import TicketRepository
+from app.repositories.user_repository import UserRepository
 from app.services.ticket_service import TicketService
 from app.schemas.ticket_schema import TicketCreate, TicketOut, TicketStatusUpdate, TicketPriorityUpdate
 
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/tickets", tags=["Tickets"])
 
 
 def get_service(session: Session = Depends(get_db)) -> TicketService:
-    return TicketService(TicketRepository(session))
+    return TicketService(TicketRepository(session), UserRepository(session))
 
 
 @router.get("/", response_model=list[TicketOut])
@@ -24,8 +25,8 @@ def get_ticket(ticket_id: int, service: TicketService = Depends(get_service)):
 
 
 @router.post("/", response_model=TicketOut, status_code=201)
-def create_ticket(ticket: TicketCreate, service: TicketService = Depends(get_service)):
-    return service.submit_ticket(ticket)
+def create_ticket(ticket: TicketCreate, user_id: int, service: TicketService = Depends(get_service)):
+    return service.submit_ticket(ticket, user_id)
 
 
 @router.patch("/{ticket_id}/status", response_model=TicketOut)

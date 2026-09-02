@@ -17,7 +17,7 @@ class CommentService:
         if not ticket:
             raise ValueError("Ticket not found")
         if ticket.status == Status.CLOSED:
-            raise ValueError("Cannot comment on a closed ticket")
+            raise ValueError("Ticket already closed")
         return self._comment_repository.save_comment(data, ticket_id, user_id)
 
     def get_comments_for_ticket(self, ticket_id: int) -> List[CommentResponse]:
