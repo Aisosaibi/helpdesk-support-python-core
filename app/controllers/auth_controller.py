@@ -15,12 +15,14 @@ def get_service(session: Session = Depends(get_db)) -> UserService:
 
 @router.post("/login", response_model=LoginResponse)
 def login(data: LoginRequest, service: UserService = Depends(get_service)):
-    user = service.login_user(data.email, data.password)
+    user = service.login(data.email, data.password)
     return LoginResponse(
         message="Login successful",
         user=UserResponse.model_validate(user),
     )
 
+
 @router.post("/logout", status_code=200)
-def logout():
+def logout(service: UserService = Depends(get_service)):
+    service.logout()
     return {"message": "Logged out successfully"}

@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
-from app.models.comment_model import Comment
+if TYPE_CHECKING:
+    from app.models.comment_model import Comment
 
 
 class Status(str, Enum):

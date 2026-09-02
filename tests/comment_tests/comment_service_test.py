@@ -11,7 +11,6 @@ from app.services.comment_service import CommentService
 
 
 class FakeTicketRepository:
-    """Lightweight in-memory fake — CommentService only calls get_by_id."""
 
     def __init__(self):
         self._tickets: dict[int, Ticket] = {}

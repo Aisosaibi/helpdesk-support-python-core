@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-from app.models.ticket_model import Status
+from app.models.ticket_model import Status, Priority
 
 
 class TicketCreate(BaseModel):
@@ -8,8 +8,14 @@ class TicketCreate(BaseModel):
     description: str
     customer_id: int
 
+
 class TicketStatusUpdate(BaseModel):
     status: Status
+
+
+class TicketPriorityUpdate(BaseModel):
+    priority: Priority
+
 
 class TicketOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -18,5 +24,4 @@ class TicketOut(BaseModel):
     subject: str
     description: str
     status: str
-
-# Do I need a dto for telling the user he deleted a ticket... what will that look like
+    priority: str
