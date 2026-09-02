@@ -11,23 +11,23 @@ class UserService:
     def __init__(self, repo: UserRepository):
         self.repo = repo
 
-    def get_all_users(self) -> list[User]:
+    def list_users(self) -> list[User]:
         return self.repo.get_all()
 
-    def get_user(self, user_id: int) -> User:
+    def get_user_by_id(self, user_id: int) -> User:
         user = self.repo.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return user
 
-    def create_user(self, data: UserCreate) -> User:
+    def register_user(self, data: UserCreate) -> User:
         if self.repo.get_by_email(data.email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
         user = User(name=data.name, email=data.email, password=hash_password(data.password), role=data.role)
         return self.repo.create(user)
 
-    def update_user(self, user_id: int, data: UserUpdate) -> User:
-        user = self.get_user(user_id)
+    def update_profile(self, user_id: int, data: UserUpdate) -> User:
+        user = self.get_user_by_id(user_id)
         if data.name is not None:
             user.name = data.name
         if data.email is not None:
@@ -39,10 +39,10 @@ class UserService:
         return self.repo.update(user)
 
     def delete_user(self, user_id: int) -> None:
-        user = self.get_user(user_id)
+        user = self.get_user_by_id(user_id)
         self.repo.delete(user)
 
-    def login_user(self, email: str, password: str) -> User:
+    def login(self, email: str, password: str) -> User:
         user = self.repo.get_by_email(email)
         if not user or not verify_password(password, user.password):
             raise HTTPException(
@@ -50,3 +50,6 @@ class UserService:
                 detail="Invalid email or password",
             )
         return user
+
+    def logout(self) -> None:
+        pass

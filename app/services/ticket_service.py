@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from fastapi import HTTPException, status
-from app.models.ticket_model import Ticket, Status as TicketStatus
+from app.models.ticket_model import Ticket, Status as TicketStatus, Priority as TicketPriority
 from app.repositories.ticket_repository import TicketRepository
 from app.schemas.ticket_schema import TicketCreate
 
@@ -13,24 +13,25 @@ ALLOWED_TRANSITIONS = {
 
 
 class TicketService:
+
     def __init__(self, repo: TicketRepository):
         self.repo = repo
 
-    def open_new_ticket(self, data: TicketCreate) -> Ticket:
+    def submit_ticket(self, data: TicketCreate) -> Ticket:
         ticket = Ticket(subject=data.subject, description=data.description, customer_id=data.customer_id)
         return self.repo.create(ticket)
 
-    def list_tickets(self) -> Sequence[Ticket]:
+    def view_tickets(self) -> Sequence[Ticket]:
         return self.repo.get_all()
 
-    def get_ticket(self, ticket_id: int) -> Ticket:
+    def view_ticket(self, ticket_id: int) -> Ticket:
         ticket = self.repo.get_by_id(ticket_id)
         if not ticket:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
         return ticket
 
-    def update_ticket_status(self, ticket_id: int, new_status: TicketStatus) -> Ticket:
-        ticket = self.get_ticket(ticket_id)
+    def update_status(self, ticket_id: int, new_status: TicketStatus) -> Ticket:
+        ticket = self.view_ticket(ticket_id)
         if new_status not in ALLOWED_TRANSITIONS[ticket.status]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -39,14 +40,11 @@ class TicketService:
         ticket.status = new_status
         return self.repo.update(ticket)
 
-    def delete_ticket(self, ticket_id: int) -> None:
-        ticket = self.get_ticket(ticket_id)
-        self.repo.delete(ticket)
+    def set_priority(self, ticket_id: int, new_priority: TicketPriority) -> Ticket:
+        ticket = self.view_ticket(ticket_id)
+        ticket.priority = new_priority
+        return self.repo.update(ticket)
 
-    def close_all_tickets(self) -> list[Ticket]:
-        closed = []
-        for ticket in self.repo.get_all():
-            if ticket.status == TicketStatus.IN_PROGRESS:
-                ticket.status = TicketStatus.CLOSED
-                closed.append(self.repo.update(ticket))
-        return closed
+    def delete_ticket(self, ticket_id: int) -> None:
+        ticket = self.view_ticket(ticket_id)
+        self.repo.delete(ticket)

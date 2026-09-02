@@ -15,22 +15,22 @@ def get_service(session: Session = Depends(get_db)) -> UserService:
 
 @router.get("/", response_model=list[UserResponse])
 def list_users(service: UserService = Depends(get_service)):
-    return service.get_all_users()
+    return service.list_users()
 
 
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, service: UserService = Depends(get_service)):
-    return service.get_user(user_id)
+    return service.get_user_by_id(user_id)
 
 
 @router.post("/", response_model=UserResponse, status_code=201)
 def create_user(data: UserCreate, service: UserService = Depends(get_service)):
-    return service.create_user(data)
+    return service.register_user(data)
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, data: UserUpdate, service: UserService = Depends(get_service)):
-    return service.update_user(user_id, data)
+    return service.update_profile(user_id, data)
 
 
 @router.delete("/{user_id}", status_code=204)
