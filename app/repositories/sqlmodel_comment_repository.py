@@ -1,10 +1,8 @@
-
 from typing import List
 
 from sqlmodel import Session, select
-
-from app.models.comment_model import Comment
 from app.repositories.comment_repository import CommentRepository
+from app.models.comment_model import Comment
 from app.schemas import CommentCreate, CommentResponse
 
 
