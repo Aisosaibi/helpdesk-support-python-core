@@ -3,7 +3,6 @@ from typing import List
 
 from app.schemas.comment import CommentCreate, CommentResponse
 
-
 class CommentRepository(ABC):
 
     @abstractmethod
