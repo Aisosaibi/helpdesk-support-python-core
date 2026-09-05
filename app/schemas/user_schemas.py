@@ -7,14 +7,12 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
-    role: Role = Role.customer
 
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
-    role: Optional[Role] = None
 
 
 class UserResponse(BaseModel):
@@ -29,6 +27,10 @@ class UserResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+
+class LogoutRequest(BaseModel):
+    email: str
 
 
 class LoginResponse(BaseModel):

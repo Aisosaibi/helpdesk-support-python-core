@@ -3,6 +3,7 @@ from typing import Sequence
 from fastapi import HTTPException, status
 from app.models.ticket_model import Ticket, Status as TicketStatus, Priority as TicketPriority
 from app.repositories.ticket_repository import TicketRepository
+from app.repositories.user_repository import UserRepository
 from app.schemas.ticket_schema import TicketCreate
 
 ALLOWED_TRANSITIONS = {
@@ -14,10 +15,17 @@ ALLOWED_TRANSITIONS = {
 
 class TicketService:
 
-    def __init__(self, repo: TicketRepository):
+    def __init__(self, repo: TicketRepository, user_repo: UserRepository):
         self.repo = repo
+        self.user_repo = user_repo
 
-    def submit_ticket(self, data: TicketCreate) -> Ticket:
+    def submit_ticket(self, data: TicketCreate, user_id: int) -> Ticket:
+        user = self.user_repo.get_by_id(user_id)
+        if not user or not user.is_logged_in:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="You must be logged in to submit a ticket",
+            )
         ticket = Ticket(subject=data.subject, description=data.description, customer_id=data.customer_id)
         return self.repo.create(ticket)
 

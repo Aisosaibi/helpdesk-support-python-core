@@ -23,11 +23,6 @@ def get_user(user_id: int, service: UserService = Depends(get_service)):
     return service.get_user_by_id(user_id)
 
 
-@router.post("/", response_model=UserResponse, status_code=201)
-def create_user(data: UserCreate, service: UserService = Depends(get_service)):
-    return service.register_user(data)
-
-
 @router.patch("/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, data: UserUpdate, service: UserService = Depends(get_service)):
     return service.update_profile(user_id, data)

@@ -17,3 +17,4 @@ class User(SQLModel, table=True):
     email: str
     password: str
     role: Role = Role.customer
+    is_logged_in: bool = Field(default=False)
