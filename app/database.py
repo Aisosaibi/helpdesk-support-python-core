@@ -1,23 +1,19 @@
 import os
-from dotenv import load_dotenv
 from typing import Generator
-from sqlmodel import SQLModel, create_engine, Session
+
+from dotenv import load_dotenv
+from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "database": os.getenv("DB_NAME", "helpdesk"),
-}
+# SQLite keeps local development and tests runnable without a separate server.
+# Set DATABASE_URL to a MySQL URL when deploying with the production database.
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./helpdesk.db")
+engine_kwargs = {"echo": True}
+if DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
 
-DATABASE_URL = (
-    f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}"
-    f"@{DB_CONFIG['host']}/{DB_CONFIG['database']}"
-)
-
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 
 def create_db_and_tables() -> None:

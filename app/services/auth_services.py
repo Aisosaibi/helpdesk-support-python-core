@@ -14,7 +14,7 @@ class AuthService:
     def register_user(self, data: UserCreate) -> User:
         if self.repo.get_by_email(data.email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
-        user = User(name=data.name, email=data.email, password=hash_password(data.password), role=Role.customer)
+        user = User(name=data.name, email=data.email, password=hash_password(data.password), role=data.role)
         return self.repo.create(user)
 
     def login(self, email: str, password: str) -> User:

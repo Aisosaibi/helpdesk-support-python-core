@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.database import get_db
+from app.models.user_model import Role
 from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
 from app.schemas.user_schemas import UserCreate, UserUpdate, UserResponse
@@ -16,6 +17,11 @@ def get_service(session: Session = Depends(get_db)) -> UserService:
 @router.get("/", response_model=list[UserResponse])
 def list_users(service: UserService = Depends(get_service)):
     return service.list_users()
+
+
+@router.get("/agents", response_model=list[UserResponse])
+def list_agents(service: UserService = Depends(get_service)):
+    return [user for user in service.list_users() if user.role == Role.agent]
 
 
 @router.get("/{user_id}", response_model=UserResponse)

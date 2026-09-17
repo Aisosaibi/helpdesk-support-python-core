@@ -4,8 +4,13 @@ from typing import Optional
 
 import pytest
 
+from sqlmodel import Session, SQLModel, create_engine
+
+from app.models.comment_model import Comment
 from app.models.ticket_model import Status, Priority, Ticket
-from app.repositories.in_memory_comment_repository import InMemoryCommentRepository
+from app.models.user_model import Role, User
+from app.repositories.comment_repository import CommentRepository
+from app.repositories.ticket_repository import TicketRepository
 from app.schemas import CommentCreate
 from app.services.comment_service import CommentService
 
@@ -22,9 +27,9 @@ class FakeTicketRepository:
         return self._tickets.get(ticket_id)
 
 
-def make_ticket(id: int, status: Status) -> Ticket:
+def make_ticket(ticket_id: int, status: Status) -> Ticket:
     return Ticket(
-        id=id,
+        id=ticket_id,
         subject="Sample ticket",
         description="Sample description",
         status=status,
@@ -36,10 +41,15 @@ def make_ticket(id: int, status: Status) -> Ticket:
 
 @pytest.fixture
 def service():
-    comment_repo = InMemoryCommentRepository()
-    ticket_repo = FakeTicketRepository()
-    ticket_repo.add_ticket(make_ticket(id=1, status=Status.OPEN))
-    ticket_repo.add_ticket(make_ticket(id=2, status=Status.CLOSED))
+    engine = create_engine("sqlite://")
+    SQLModel.metadata.create_all(engine)
+    session = Session(engine)
+    session.add(User(id=1, name="Test User", email="test@example.com", password="hashed", role=Role.customer))
+    session.add(make_ticket(ticket_id=1, status=Status.OPEN))
+    session.add(make_ticket(ticket_id=2, status=Status.CLOSED))
+    session.commit()
+    comment_repo = CommentRepository(session)
+    ticket_repo = TicketRepository(session)
     return CommentService(comment_repo, ticket_repo)
 
 
